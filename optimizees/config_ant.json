@@ -1,0 +1,9 @@
+{
+  "model_path": "/home/username/L2L/l2l/optimizees/neuroevolution",
+  "netlogo_headless_path": "/home/username/NetLogo_6.2.0/netlogo-headless.sh",
+  "model_name": "ant_colony_snn.nlogo",
+  "netlogo_version": 6.2,
+  "netlogo_home": "/opt/netlogo/",
+  "pynetlogo_model": "run_pynetlogo_model.py",
+  "ticks": 10010  
+}

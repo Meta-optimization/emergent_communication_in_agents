@@ -6,7 +6,7 @@
     to rely on their visual system. The first line of the file encompasses the weights, the second line are the delays, the last row shows 
     the achieved fitness.  
 1. `output_*_*` contain Python pickle files with the networks' spiking activity coming from the NEST simulation.
-    E.g. `output_0_20` indicates generation `10` individual `20`. When the pickle file is loaded, it contains dictionaries with the spikes divided 
+    E.g. `output_10_20` indicates generation `10` individual `20`. When the pickle file is loaded, it contains dictionaries with the spikes divided 
     into the three layers of the network.
 1. `performance_comparison` contains `csv` files indicating the foraging performance on a test simulation. NetLogo (BeaviourSpace) generates 
    these files, thus the relevant information is from line 6 on. The columns contain the `seed`, `step` (simulation steps), 

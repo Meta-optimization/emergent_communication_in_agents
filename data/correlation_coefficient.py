@@ -2,6 +2,7 @@ import glob
 import pickle
 import os
 import numpy as np
+import scipy
 
 import elephant
 import elephant.spike_train_correlation as STC
@@ -13,60 +14,117 @@ import seaborn as sns
 
 from elephant.conversion import BinnedSpikeTrain as BST
 
-sns.set(style="white")
+
+sns.set(style="white",
+        rc={'xtick.bottom': True, 'ytick.left': True})
 sns.set_color_codes("dark")
 sns.set_context("paper", font_scale=1.3,
-                rc={"lines.linewidth": 2., "grid.linewidth": 0.1})
-
+                rc={"lines.linewidth": 1.8, "grid.linewidth": 0.1})
 
 
 def split(x, idx=1):
+    x = x.split('/')[1]
+    print(x)
     x = os.path.splitext(x)[0]
+    print(x)
     return int(x.split('_')[idx])
 
 
+def create_dataframe(binned_spiketrains):
+    dataframes = [pd.DataFrame(STC.correlation_coefficient(b)[11:, :11]) for b in binned_spiketrains]
+    dataframe = pd.concat([d.T for d in dataframes])
+    dataframe.columns = ['Move', 'Left', 'Right', 'Pheromone']
+    actions = ['Visual Red', 'Visual Green', 'Smell Left',
+                'Smell Middle', 'Smell Right', 'Nociceptive', 'Reward',
+                'Nest Left', 'Nest Middle', 'Nest Right', 'On Nest']
+    dataframe['Inputs'] = actions * len(files)
+    dataframe['Generations'] = np.repeat(np.arange(10, len(files) + 10), len(dataframe)/len(files)) * 10
+    dataframe.index = range(len(dataframe))
+    # hues = ['Visual Red', 'Visual Green', 'Smell Left', 'Smell Middle', 'Smell Right']
+    # new_frame = dataframe[dataframe['Inputs'].isin(hues)]
+    return dataframe, actions
+
+
+def plot_regression(binned_spiketrains, show=True):
+    # corrcoeff = STC.correlation_coefficient(binned_sts[-1])
+    # corrcoeff.shape
+    # sns.heatmap(corrcoeff[11:,:11],cmap='vlag',vmin=-1, vmax=1)
+    dataframes, actions = create_dataframe(binned_spiketrains)
+    pal = sns.color_palette('rocket', 5)
+    # whether to standarize the y data
+    standardized = False
+    fig = plt.figure(figsize=(22, 12))
+    for row_i, cols in enumerate(['Move', 'Left', 'Right', 'Pheromone']):
+        print(cols)
+        j = 0
+        col_set = False
+        for i, inp in enumerate(actions):
+            if i < len(actions):
+                # ax = plt.subplot(4, 11, (row_i + 1) * (i+1))
+                mask = dataframes['Inputs'] == inp
+                y = dataframes[mask][f'{cols}']
+                if y.isnull().any():
+                    x = dataframes[mask].Generations.values
+                    x = x[~y.isnull()]
+                    y = y[~y.isnull()].values
+                else:
+                    x = dataframes[mask].Generations.values
+                if standardized:
+                    y =  (y - y.mean()) / y.std() # (y - y.min()) / (y.max() - y.min())
+                slope, intercept, r_value, p_value, std_err = scipy.stats.linregress(x=x, y=y)
+                # print(slope, intercept, r_value, p_value, std_err, r_value**2)
+                if p_value < 0.005:
+                    ax = plt.subplot2grid((4, 22), (row_i, j), colspan=2, **{'ylim': (-1, 1)})
+                    j += 2
+                    ax.axhline(**{'color':'gray', 'alpha':0.5, 'ls':'--', 'lw': 1})
+                    p = sns.regplot(data=dataframes[mask], x=x, y=y,
+                                    scatter=True, fit_reg=True, seed=0, ax=ax, n_boot=1000,
+                                    label=f' $\sigma=${y.std():.4f} \n s={slope*1700/2:.4f}', #\n p={p_value:.4f}'
+                                    color=pal[row_i],)
+                                    # line_kws={"color": pal[-1]})
+                    p.set_title(inp)
+                    # legend without border and without marker
+                    p.legend(frameon=False, handlelength=0, handletextpad=0, markerscale=0)
+                    if not col_set:
+                        p.set_ylabel(f'{cols}')
+                        col_set = True
+                    else:
+                        p.set_ylabel(f' ')
+                        p.set_yticks([])
+                    # remove labels on the x-axis besides the last row
+                    if row_i != 3:
+                        # p.set_xticks([])
+                        p.tick_params(axis='x', labelbottom=False, bottom=False,)
+                    else:
+                        p.tick_params(axis='x', rotation=30)
+    plt.subplots_adjust(hspace=0.3, wspace=0.3)
+    if standardized:
+        fname = 'correlation_regression_standardized.pdf'
+    else:
+        fname = 'correlation_regression.pdf'
+    if show:
+        plt.show()
+    else:
+        plt.savefig(fname,
+                    dpi=600, bbox_inches='tight', pad_inches=0.1)
+
+
 if __name__ == '__main__':
-    directories = ['output_10_10/', 'output_200_4/', 'output_600_22/', 'output_1600_30']
-    middles = [f'middle {i}' for i in range(20)]
-    fig, axes = plt.subplots(2, 2, figsize=(18, 12), sharex=True, sharey=True)
-    plt.subplots_adjust(hspace=0.07, wspace=0.05)
-    cbar_ax = fig.add_axes([.91, .3, .03, .4])
-    font_size = 18
-    n_bins = 2000
-    bin_size = 20 * pq.ms
+    files = glob.glob('results_spikes_best_of_generation/*.pkl')
+    files = np.array(sorted(files, key=lambda x: split(x, 3)))
+    # load individual data and create matrix to correlate
     binned_sts = []  # list for binned spiketrains
     t_start = 3 * pq.ms
     t_stop = 40000 * pq.ms
-    for ax, directory in zip(axes.ravel(), directories):
-        files = glob.glob(f'{directory}/output_all_*.pkl')
-        corrmap = []
-        print(f'Directory {directory}')
-        for output in files:
-            print(output)
-            with open(output, 'rb') as f:
-                res = pickle.load(f)
-            sts = []
-            for st in res['input']:
-                sts.append(neo.SpikeTrain(st['times']*pq.ms, t_start=t_start, t_stop=t_stop))
-            for st in res['output']:
-                sts.append(neo.SpikeTrain(st['times']*pq.ms, t_start=t_start, t_stop=t_stop))
-            binned = BST(sts, bin_size=bin_size)
-            corrmap.append(STC.correlation_coefficient(binned))
-        corr = np.array(corrmap).mean(0)
-        print(f'corr max {corr[11:, :11].max()}, corr min {corr[11:, :11].min()}')
-        labels_in = ['Visual Red', 'Visual Green', 'Smell Left',
-                     'Smell Middle', 'Smell Right', 'Nociceptive', 'Reward',
-                     'Nest Left', 'Nest Middle', 'Nest Right', 'On Nest']
-        labels_out = ['Move', 'Left', 'Right', 'Pheromone']
-        vmax = 0.6 # -.45913
-        g = sns.heatmap(corr[11:, :11], annot=True, vmin=-vmax,
-                        vmax=vmax, cmap='vlag',
-                        ax=ax, cbar_ax=cbar_ax, annot_kws={"size": 12}, fmt='.3f')
-        print(corr[11:, :11].min(), corr[11:, :11].max(),)
-        g.set_yticklabels(labels_out, size=font_size, rotation=0)
-        g.set_xticklabels(labels_in, size=font_size, rotation=90)
-        generation = split(directory, 1)
-        ax.set_title(f'Generation {generation}', size=font_size)
-    # plt.show()
-    fig.savefig(f'correlation_map_mean.pdf',
-               dpi=600, bbox_inches='tight', pad_inches=0.1)
+    n_bins = 2000
+    for output in files:
+        print(output)
+        with open(output, 'rb') as f:
+            res = pickle.load(f)
+        sts = []
+        for st in res['input']:
+            sts.append(neo.SpikeTrain(st['times']*pq.ms, t_start=t_start, t_stop=t_stop))
+        for st in res['output']:
+            sts.append(neo.SpikeTrain(st['times']*pq.ms, t_start=t_start, t_stop=t_stop))
+        binned_sts.append(BST(sts, n_bins=n_bins))
+    plot_regression(binned_sts, False)

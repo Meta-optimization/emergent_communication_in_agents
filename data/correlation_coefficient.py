@@ -34,7 +34,7 @@ def create_dataframe(binned_spiketrains):
     dataframes = [pd.DataFrame(STC.correlation_coefficient(b)[11:, :11]) for b in binned_spiketrains]
     dataframe = pd.concat([d.T for d in dataframes])
     dataframe.columns = ['Move', 'Left', 'Right', 'Pheromone']
-    actions = ['Visual Red', 'Visual Green', 'Smell Left',
+    actions = ['Wall', 'Food', 'Smell Left',
                 'Smell Middle', 'Smell Right', 'Nociceptive', 'Reward',
                 'Nest Left', 'Nest Middle', 'Nest Right', 'On Nest']
     dataframe['Inputs'] = actions * len(files)

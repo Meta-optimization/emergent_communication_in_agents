@@ -54,7 +54,7 @@ if __name__ == '__main__':
             corrmap.append(STC.correlation_coefficient(binned))
         corr = np.array(corrmap).mean(0)
         print(f'corr max {corr[11:, :11].max()}, corr min {corr[11:, :11].min()}')
-        labels_in = ['Visual Red', 'Visual Green', 'Smell Left',
+        labels_in = ['Wall', 'Food', 'Smell Left',
                      'Smell Middle', 'Smell Right', 'Nociceptive', 'Reward',
                      'Nest Left', 'Nest Middle', 'Nest Right', 'On Nest']
         labels_out = ['Move', 'Left', 'Right', 'Pheromone']

@@ -16,13 +16,14 @@ def func(x, index):
 if __name__ == '__main__':
     folders = ['fitness_full', 'fitness_impaired']
     colors = ['tab:blue', 'tab:green']
-    plt.figure(figsize=(10, 8))
+    titles = ['With Pheromone', 'Without Pheromone']
+    fig, axes = plt.subplots(2, 1, figsize=(10, 12))
     for idx, f in enumerate(folders):
         print(f'traversing folder {f}')
         csvs = glob.glob(f'{f}{os.path.sep}*.csv')
         # the csvs are in form: individual_gen_indi_results.csv
         # create a function to split strings via "_" and take 2. argument
-        index = [3, 1][idx]
+        index = 2
         # we sort according the gen index
         csvs = sorted(csvs, key=partial(func, index=index))
         # create an ordered dictionary to store gen_idx as key and
@@ -47,14 +48,17 @@ if __name__ == '__main__':
                 sigma.append(np.std(v, 0))
                 maxes.append(np.max(v, 0))
         # plt.errorbar(ordered_dict.keys(), mu, sigma, fmt='-o')
-        plt.plot(ordered_dict.keys(), mu, c=colors[idx], lw=2)
-        plt.plot(ordered_dict.keys(), maxes, ':', c=colors[idx], linewidth=2)
+        axes[idx].plot(ordered_dict.keys(), mu, c=colors[idx], lw=2)
+        axes[idx].plot(ordered_dict.keys(), maxes, ':', c=colors[idx], linewidth=2)
         y1 = np.array(mu) + np.array(sigma)
         y2 = np.array(mu) - np.array(sigma)
-        plt.plot(ordered_dict.keys(), y1, color=colors[idx], alpha=0.1)
-        plt.plot(ordered_dict.keys(), y2, color=colors[idx], alpha=0.1)
-        plt.fill_between(ordered_dict.keys(), y1, y2, alpha=.2, color=colors[idx])
+        axes[idx].plot(ordered_dict.keys(), y1, color=colors[idx], alpha=0.1)
+        axes[idx].plot(ordered_dict.keys(), y2, color=colors[idx], alpha=0.1)
+        axes[idx].fill_between(ordered_dict.keys(), y1, y2, alpha=.2, color=colors[idx])
+        axes[idx].set_xlim(0,1710)
+        axes[idx].title.set_text(titles[idx])
+        axes[idx].set_ylim(-6000, 40000)
     plt.xlabel('Generations')
     plt.ylabel('Fitness')
     plt.savefig('fitness.pdf', bbox_inches='tight', pad_inches=0.1)
-    # plt.show()
+    plt.show()

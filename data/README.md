@@ -17,9 +17,10 @@
 ## Figures 
 This part explains how to create the figures in the manuscript. 
 
-1. `fitness_plot.py` plots Figure 4, the fitness of the ant colony. Requires folders `fitness_full` and `fitness_impaired`.
-1. `heatmap_concentration_gens.py` plots Figure 5, the pheromone concentration heatmap over different generations. Requires folder `heatmap`.
-1. `plot_performance.py` plots Figure 6, the performance comparison of different ant colony models. Requires folder `performance_comparison`.
-1. `correlation_heatmap.py` plots Figure 7, the correlation heatmap between the network input and output spike trains. Requires folders `output_*_*`.
-1. `correlation_coeffecient.py` plots Figure 8, the correlation coefficients of input and output spike trains for the first ant of the best individual. Please first unpack the tar file `results_spikes_best_of_generation.tar.gz`. 
+1. `fitness_plot.py` plots Figure 11, the fitness of the ant colony. Requires folders `fitness_full` and `fitness_impaired`.
+1. in the directory `trials_benchmark`, `ci_lineplot.py` plots Figure 12, depicting the best individual's performance as a confidence interval over the last hundred generations and averaged over 100 trials.
+1. `heatmap_concentration_gens.py` plots Figure 13, the pheromone concentration heatmap over different generations. Requires folder `heatmap`.
+1. `plot_performance.py` plots Figure 14, the performance comparison of different ant colony models. Requires folder `performance_comparison`.
+1. `correlation_heatmap.py` plots Figure 15, the correlation heatmap between the network input and output spike trains. Requires folders `output_*_*`.
+1. `correlation_coeffecient.py` plots Figure 16, the correlation coefficients of input and output spike trains for the first ant of the best individual. Please first unpack the tar file `results_spikes_best_of_generation.tar.gz`. 
 Requires folder `results_spikes_best_of_generation`

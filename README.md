@@ -7,5 +7,5 @@ Repository accompanying the paper **Emergent communication enhances foraging beh
 </figure>
 
 ## Requirements to run the simulations
-To run the simulations please fist follow the installation requirements specified for L2L, see https://github.com/Meta-optimization/L2L. Additionally, `NEST 3.3` and `NetLogo 3.3` are needed. We run the simulations with `Python 3.9`. To plot the figures (see [Data and figure guide](https://github.com/Meta-optimization/emergent_communication_in_agents/tree/main/data#readme)), the plotting library `Seaborn 0.12.0` is required. 
+To run the simulations please fist follow the installation requirements specified for L2L, see https://github.com/Meta-optimization/L2L. Additionally, `NEST 3.3` and `NetLogo 6.3` are needed. We run the simulations with `Python 3.9`. To plot the figures (see [Data and figure guide](https://github.com/Meta-optimization/emergent_communication_in_agents/tree/main/data#readme)), the plotting library `Seaborn 0.12.0` is required. 
 After cloning and installing L2L, place the file under `bin/l2l-neuroevolution_multi_ant.py` into the `bin` folder of L2L. Execute `python l2l-neuroevolution_multi_ant.py` for a local run. 
